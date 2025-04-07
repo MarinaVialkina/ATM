@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в аккаунт банка</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #3e8e41;
+        }
+
+        #result {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Вход в аккаунт банка</h1>
+    <form id="loginForm">
+        <label for="cardNumber">Номер карты:</label>
+        <input type="text" id="cardNumber" name="cardNumber" required><br><br>
+
+        <label for="pinCode">PIN-код:</label>
+        <input type="password" id="pinCode" name="pinCode" required><br><br>
+
+        <button type="submit">Войти</button>
+    </form>
+
+    <div id="result"></div>
+</div>
+
+<script>
+    document.getElementById("loginForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        const cardNumber = document.getElementById("cardNumber").value;
+        const pinCode = document.getElementById("pinCode").value;
+
+        const xhr = new XMLHttpRequest();
+        const url = 'http://localhost:8080/login';
+        const params = `cardNumber=${cardNumber}&pinCode=${pinCode}`;
+
+        xhr.open('POST', url, true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    if (data.success) {
+                        window.location.href = '\account.html';
+                    } else {
+                        document.getElementById("result").textContent = "Неверный номер карты или PIN-код.";
+                    }
+                } catch (e) {
+                    document.getElementById("result").textContent = "Ошибка при обработке ответа сервера.";
+                    console.error("Ошибка парсинга JSON:", e);
+                }
+            } else {
+                document.getElementById("result").textContent = "Ошибка при отправке запроса.";
+                console.error('Ошибка запроса. Status:', xhr.status, xhr.statusText);
+            }
+        };
+
+        xhr.onerror = function() {
+            document.getElementById("result").textContent = "Произошла ошибка сети или CORS.";
+            console.error('Ошибка сети или CORS.');
+        };
+
+        xhr.send(params);
+    });
+</script>
+</body>
+</html>
