@@ -98,7 +98,7 @@
                 try {
                     const data = JSON.parse(xhr.responseText);
                     if (data.success) {
-                        window.location.href = '\account.html';
+                        window.location.href = `\account.html?cardNumber=${cardNumber}`;
                     } else {
                         document.getElementById("result").textContent = "Неверный номер карты или PIN-код.";
                     }

@@ -3,9 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Приветствие</title>
+    <title>Банкомат</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .atm-container {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+        }
+
+        .account-number {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .balance {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .operations {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .operation-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .operation-button:hover {
+            background-color: #0056b3;
+        }
+
+        .history-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: block;
+            margin: 0 auto;
+            width: fit-content;
+        }
+
+        .history-button:hover {
+            background-color: #1e7e34;
+        }
+        .back-button {
+            background-color: #ffffff;
+            color: #28a745;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: block;
+            margin: 0 auto;
+            width: fit-content;
+        }
+    </style>
 </head>
 <body>
-<h1>ПРИВЕТ</h1>
+<div class="atm-container">
+    <h1>Банкомат</h1>
+    <div class="account-number" id="accountNumber">Номер счета: Загрузка...</div>
+    <div class="balance" id="balance">Загрузка баланса...</div>
+
+    <div class="operations">
+        <button class="operation-button" onclick="goToReplenishment()">Пополнение</button>
+        <button class="operation-button" onclick="goToWithdrawal()">Снятие</button>
+        <button class="operation-button" onclick="goToTransfer()">Перевод</button>
+    </div>
+
+    <button class="history-button" onclick="goToHistory()">Показать журнал операций</button>
+    <button class="back-button" onclick="comeBack()">Завершить сеанс</button>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const accountNumber = urlParams.get('cardNumber');
+
+    if (accountNumber) {
+        document.getElementById('accountNumber').textContent = 'Номер счета: ' + accountNumber;
+    } else {
+        document.getElementById('accountNumber').textContent = 'Номер счета не найден.';
+    }
+
+
+
+
+    function loadBalance() {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', 'http://localhost:8080/account');
+        xhr.setRequestHeader('accountNumber', accountNumber);
+
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) { // Проверяем успешный статус
+              try {
+                const data = JSON.parse(xhr.responseText);
+                if (data.error) {
+                  document.getElementById('balance').textContent = 'Ошибка: ' + data.error;
+                } else {
+                  document.getElementById('balance').textContent = 'Баланс: ' + data.balance + ' ₽';
+                }
+              } catch (error) {
+                console.error('Ошибка при разборе JSON:', error);
+                document.getElementById('balance').textContent = 'Ошибка при обработке ответа.';
+              }
+            } else {
+              console.error('Ошибка при загрузке баланса:', xhr.status, xhr.statusText);
+              document.getElementById('balance').textContent = 'Ошибка при загрузке баланса. Статус: ' + xhr.status;
+            }
+        };
+
+      xhr.onerror = function() {
+        console.error('Ошибка сети при загрузке баланса.');
+        document.getElementById('balance').textContent = 'Ошибка сети при загрузке баланса.';
+      };
+
+      xhr.send();
+    }
+
+    document.addEventListener('DOMContentLoaded', loadBalance);
+
+
+    function goToReplenishment() {
+        window.location.href = `transactions/replenishment.html?accountNumber=${accountNumber}`;
+    }
+
+    function goToWithdrawal() {
+        window.location.href = `transactions/withdrawal.html?accountNumber=${accountNumber}`;
+    }
+
+    function goToTransfer() {
+        window.location.href = `transactions/transfer.html?accountNumber=${accountNumber}`;
+    }
+
+    function goToHistory() {
+        window.location.href = `transactionsLog.html?accountNumber=${accountNumber}`;
+    }
+    function comeBack() {
+        window.location.href = `auth.html`;
+    }
+</script>
 </body>
 </html>

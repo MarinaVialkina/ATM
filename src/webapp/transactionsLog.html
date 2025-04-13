@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>История операций</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 50px;
+        }
+
+        .form-container {
+            width: 80%; /* Расширяем для таблицы */
+            max-width: 800px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #accountNumber {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .back-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: block;
+            margin: 0 auto;
+            width: fit-content;
+            float: left;
+        }
+
+        .back-button:hover {
+            background-color: #1e7e34;
+        }
+    </style>
+</head>
+<body>
+<h1>История операций</h1>
+
+<div class="form-container">
+    <h2 id="accountNumber"></h2> <!-- Выводим номер счета тут -->
+    <table id="transactionsTable">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Дата</th>
+            <th>Тип операции</th>
+            <th>Сумма</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Строки с данными будут добавлены сюда JavaScript -->
+        </tbody>
+        <button class="back-button" onclick="comeBack()">На главную</button>
+    </table>
+    <div id="message"></div>
+</div>
+
+<script>
+    // 1. Получаем номер счета из URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const accountNumber = urlParams.get('accountNumber');
+
+    // 2. Отображаем номер счета на странице
+    document.getElementById('accountNumber').textContent = `История операций для счета: ${accountNumber}`;
+
+    // 3. Функция для загрузки истории операций (XMLHttpRequest)
+    function loadTransactions() {
+        const xhr = new XMLHttpRequest();
+        const url = `http://localhost:8080/transactionsLog?accountNumber=${accountNumber}`; // Замените URL
+
+        xhr.open('GET', url, true);
+        xhr.setRequestHeader('accountNumber', accountNumber); // Это не нужно, accountNumber уже в URL
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const transactions = JSON.parse(xhr.responseText);
+
+                    // 4. Отображаем данные в таблице
+                    const tableBody = document.getElementById('transactionsTable').getElementsByTagName('tbody')[0]; // Получаем tbody
+                    tableBody.innerHTML = ''; // Очищаем таблицу перед добавлением новых данных
+
+                    // Обходим объект transactions, а не массив
+                    for (const key in transactions) {
+                        if (transactions.hasOwnProperty(key)) {
+                            const transaction = transactions[key];
+                            const row = tableBody.insertRow();
+                            const idCell = row.insertCell();
+                            const dateCell = row.insertCell();
+                            const typeCell = row.insertCell();
+                            const amountCell = row.insertCell();
+
+                            idCell.textContent = key; // ID берем из ключа объекта
+                            // Форматируем дату из timestamp
+                            const date = new Date(transaction.dateAndTime);
+                            dateCell.textContent = date.toLocaleString();
+                            typeCell.textContent = transaction.transactionType;
+                            amountCell.textContent = transaction.amount;
+                        }
+                    }
+
+
+                } catch (error) {
+                    console.error('Ошибка при парсинге JSON:', error);
+                    document.getElementById('message').textContent = 'Ошибка при обработке данных.'; // Выводим сообщение об ошибке
+                }
+            } else {
+                console.error('Ошибка при загрузке истории операций:', xhr.status, xhr.statusText);
+                document.getElementById('message').textContent = 'Ошибка при загрузке данных.'; // Выводим сообщение об ошибке
+            }
+        };
+
+        xhr.onerror = function() {
+            console.error('Ошибка сети.');
+            document.getElementById('message').textContent = 'Ошибка сети при загрузке данных.'; // Выводим сообщение об ошибке
+        };
+
+        xhr.send();
+    }
+
+    // 5. Загружаем историю операций при загрузке страницы
+    document.addEventListener('DOMContentLoaded', loadTransactions);
+
+    function comeBack() {
+        window.location.href = `account.html?cardNumber=${accountNumber}`;
+    }
+</script>
+</body>
+</html>

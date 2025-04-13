@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пополнение баланса</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 50px;
+        }
+
+        .form-container {
+            width: 300px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #3e8e41;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<h1>Пополнение баланса</h1>
+
+<div class="form-container">
+    <form id="replenishmentForm">
+        <label for="amount">Сумма пополнения:</label>
+        <input type="number" id="amount" name="amount" required>
+
+        <button type="submit">Пополнить</button>
+    </form>
+
+    <div id="message"></div>
+</div>
+
+<script>
+    document.getElementById('replenishmentForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const accountNumber = urlParams.get('accountNumber');
+        const amount = document.getElementById('amount').value;
+        const params = `accountNumber=${accountNumber}&amount=${amount}`;
+
+
+
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'http://localhost:8080/transactions/replenishment', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+
+
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    if (data.success) {
+                        document.getElementById('message').textContent = 'Баланс успешно пополнен!';
+                        document.getElementById('message').style.color = 'green';
+                        window.location.href = `../account.html?cardNumber=${accountNumber}`;
+                    } else {
+                        document.getElementById('message').textContent = 'Ошибка пополнения баланса: ' + data.message;
+                        document.getElementById('message').style.color = 'red';
+                    }
+                } catch (error) {
+                    console.error('Ошибка при парсинге JSON:', error);
+                    document.getElementById('message').textContent = 'Ошибка при обработке ответа сервера.';
+                    document.getElementById('message').style.color = 'red';
+                }
+            } else {
+                console.error('Ошибка при отправке запроса:', xhr.status, xhr.statusText);
+                document.getElementById('message').textContent = 'Ошибка при отправке запроса. Статус: ' + xhr.status + ' ' + xhr.statusText;
+                document.getElementById('message').style.color = 'red';
+            }
+        };
+
+        xhr.onerror = function() {
+            console.error('Ошибка сети.');
+            document.getElementById('message').textContent = 'Ошибка сети при отправке запроса.';
+            document.getElementById('message').style.color = 'red';
+        };
+
+        xhr.send(params);
+
+
+    });
+</script>
+</body>
+</html>
