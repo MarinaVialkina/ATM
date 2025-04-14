@@ -112,38 +112,35 @@
     }
 
 
-
-
     function loadBalance() {
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', 'http://localhost:8080/account');
+        const url = 'http://localhost:8080/account';
+
+        xhr.open('GET', url, true);
         xhr.setRequestHeader('accountNumber', accountNumber);
 
         xhr.onload = function() {
-            if (xhr.status >= 200 && xhr.status < 300) { // Проверяем успешный статус
-              try {
-                const data = JSON.parse(xhr.responseText);
-                if (data.error) {
-                  document.getElementById('balance').textContent = 'Ошибка: ' + data.error;
-                } else {
-                  document.getElementById('balance').textContent = 'Баланс: ' + data.balance + ' ₽';
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    if (data.error) {
+                        document.getElementById('balance').textContent = 'Ошибка: ' + data.error;
+                    } else {
+                        document.getElementById('balance').textContent = 'Баланс: ' + data.balance + ' ₽';
+                    }
+                } catch (error) {
+                    document.getElementById('balance').textContent = 'Ошибка при обработке ответа.';
                 }
-              } catch (error) {
-                console.error('Ошибка при разборе JSON:', error);
-                document.getElementById('balance').textContent = 'Ошибка при обработке ответа.';
-              }
             } else {
-              console.error('Ошибка при загрузке баланса:', xhr.status, xhr.statusText);
-              document.getElementById('balance').textContent = 'Ошибка при загрузке баланса. Статус: ' + xhr.status;
+                document.getElementById('balance').textContent = 'Ошибка при загрузке баланса. Статус: ' + xhr.status;
             }
         };
 
-      xhr.onerror = function() {
-        console.error('Ошибка сети при загрузке баланса.');
-        document.getElementById('balance').textContent = 'Ошибка сети при загрузке баланса.';
-      };
+        xhr.onerror = function() {
+            document.getElementById('balance').textContent = 'Ошибка сети при загрузке баланса.';
+        };
 
-      xhr.send();
+        xhr.send();
     }
 
     document.addEventListener('DOMContentLoaded', loadBalance);

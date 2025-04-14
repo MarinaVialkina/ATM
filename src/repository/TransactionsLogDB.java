@@ -5,9 +5,7 @@ import dto.TransactionLogDTO;
 import model.TransactionType;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -24,26 +22,24 @@ public class TransactionsLogDB implements TransactionsDB {
         String sql = "INSERT INTO transactions(account_number, transaction_type, transaction_amount) VALUES ('%s', '%s', %s);";
         try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
              Statement statement = connection.createStatement()) {
-            System.out.println("здесь всё ок");
-            statement.execute(String.format(sql, transactionData.getAccountNumber(),
-                    (transactionData.getTransactionType().getDescription()).toString(), transactionData.getAmount()));
+            statement.execute(String.format(sql, transactionData.accountNumber(),
+                    (transactionData.transactionType().getDescription()), transactionData.amount()));
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
 
-        if (transactionData.getTransactionType() == TransactionType.TRANSFER) {
+        if (transactionData.transactionType() == TransactionType.TRANSFER) {
             try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
                  Statement statement = connection.createStatement()) {
-                statement.execute(String.format(sql, transactionData.getAccountNumberRecipient(),
-                        "Перевод со счёта " + transactionData.getAccountNumber(), transactionData.getAmount()));
+                statement.execute(String.format(sql, transactionData.accountNumberRecipient(),
+                        "Перевод со счёта " + transactionData.accountNumber(), transactionData.amount()));
 
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         }
-        System.out.println("Транзакция прошла успешно");
     }
 
     public Map<String, TransactionLogDTO> getTransactionHistory(String accountNumber) {

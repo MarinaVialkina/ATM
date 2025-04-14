@@ -31,10 +31,7 @@ public class ClientsDBImpl implements ClientsDB {
         try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
              Statement statement = connection.createStatement()) {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM clientele WHERE account_number='" + accountNumber + "';");
-            if (resultSet.next()) {
-                return true;
-            }
-            return false;
+            return resultSet.next();
 
         } catch (SQLException e) {
             throw new RuntimeException(e);

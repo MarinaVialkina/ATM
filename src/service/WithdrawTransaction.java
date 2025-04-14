@@ -1,6 +1,7 @@
 package service;
 
 import dto.TransactionDTO;
+import exception.TransactionError;
 import repository.AccountsDB;
 import repository.TransactionsDB;
 
@@ -18,15 +19,14 @@ public class WithdrawTransaction implements Transaction {
 
     @Override
     public void conductTransaction(TransactionDTO transactionData) {
-        BigDecimal obsoleteBalance = accountsDB.getBalance(transactionData.getAccountNumber());
-        if (obsoleteBalance.compareTo(transactionData.getAmount()) < 0) {
-            return;
-            //сообщение об ошибке снятия
+        BigDecimal obsoleteBalance = accountsDB.getBalance(transactionData.accountNumber());
+        if (obsoleteBalance.compareTo(transactionData.amount()) < 0) {
+            throw new TransactionError("Недостаточно средств на счёте");
         }
 
-        BigDecimal newBalance = obsoleteBalance.subtract(transactionData.getAmount());
+        BigDecimal newBalance = obsoleteBalance.subtract(transactionData.amount());
 
-        accountsDB.changeBalance(transactionData.getAccountNumber(), newBalance);
+        accountsDB.changeBalance(transactionData.accountNumber(), newBalance);
         transactionsLogDB.addRecord(transactionData);
     }
 }

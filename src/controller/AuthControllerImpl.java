@@ -7,7 +7,6 @@ import repository.ClientsDB;
 public class AuthControllerImpl implements AuthController{
     private final ClientsDB clientsDB;
 
-
     public AuthControllerImpl(ClientsDB clientsDB) {
         this.clientsDB = clientsDB;
     }
@@ -17,15 +16,12 @@ public class AuthControllerImpl implements AuthController{
         String validPinCode = pinCode.trim();
 
         if (validAccountNumber.length() != 20 || !isDigit(validAccountNumber) || validPinCode.length() != 4 || !isDigit(validPinCode)) {
-            System.out.println("Неверно введён логин или пароль");
             return false;
         }
 
         Client client = clientsDB.checkAuthentication(validAccountNumber, pinCode);
-        if (client != null) {
-            return true;
-        }
-        return false;
+
+        return client != null;
 
     }
 

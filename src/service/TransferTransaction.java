@@ -1,6 +1,7 @@
 package service;
 
 import dto.TransactionDTO;
+import exception.TransactionError;
 import repository.AccountsDB;
 import repository.TransactionsDB;
 
@@ -19,15 +20,14 @@ public class TransferTransaction implements Transaction {
 
     @Override
     public void conductTransaction(TransactionDTO transactionData) {
-        BigDecimal senderBalance = accountsDB.getBalance(transactionData.getAccountNumber());
-        BigDecimal recipientBalance = accountsDB.getBalance(transactionData.getAccountNumberRecipient());
-        if (senderBalance.compareTo(transactionData.getAmount()) < 0) {
-            return;//сообщение об ошибке снятия
+        BigDecimal senderBalance = accountsDB.getBalance(transactionData.accountNumber());
+        BigDecimal recipientBalance = accountsDB.getBalance(transactionData.accountNumberRecipient());
+        if (senderBalance.compareTo(transactionData.amount()) < 0) {
+            throw new TransactionError("Недостаточно средств на счёте");
         }
 
-        accountsDB.changeBalance(transactionData.getAccountNumber(), senderBalance.subtract(transactionData.getAmount()));
-        accountsDB.changeBalance(transactionData.getAccountNumberRecipient(), recipientBalance.add(transactionData.getAmount()));
-
+        accountsDB.changeBalance(transactionData.accountNumber(), senderBalance.subtract(transactionData.amount()));
+        accountsDB.changeBalance(transactionData.accountNumberRecipient(), recipientBalance.add(transactionData.amount()));
 
         transactionsLogDB.addRecord(transactionData);
     }

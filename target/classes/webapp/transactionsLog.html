@@ -69,7 +69,7 @@
 <h1>История операций</h1>
 
 <div class="form-container">
-    <h2 id="accountNumber"></h2> <!-- Выводим номер счета тут -->
+    <h2 id="accountNumber"></h2>
     <table id="transactionsTable">
         <thead>
         <tr>
@@ -80,7 +80,7 @@
         </tr>
         </thead>
         <tbody>
-        <!-- Строки с данными будут добавлены сюда JavaScript -->
+
         </tbody>
         <button class="back-button" onclick="comeBack()">На главную</button>
     </table>
@@ -88,30 +88,25 @@
 </div>
 
 <script>
-    // 1. Получаем номер счета из URL
     const urlParams = new URLSearchParams(window.location.search);
     const accountNumber = urlParams.get('accountNumber');
 
-    // 2. Отображаем номер счета на странице
     document.getElementById('accountNumber').textContent = `История операций для счета: ${accountNumber}`;
 
-    // 3. Функция для загрузки истории операций (XMLHttpRequest)
     function loadTransactions() {
         const xhr = new XMLHttpRequest();
-        const url = `http://localhost:8080/transactionsLog?accountNumber=${accountNumber}`; // Замените URL
+        const url = `http://localhost:8080/transactionsLog?accountNumber=${accountNumber}`;
 
         xhr.open('GET', url, true);
-        xhr.setRequestHeader('accountNumber', accountNumber); // Это не нужно, accountNumber уже в URL
+        xhr.setRequestHeader('accountNumber', accountNumber);
         xhr.onload = function() {
             if (xhr.status >= 200 && xhr.status < 300) {
                 try {
                     const transactions = JSON.parse(xhr.responseText);
 
-                    // 4. Отображаем данные в таблице
-                    const tableBody = document.getElementById('transactionsTable').getElementsByTagName('tbody')[0]; // Получаем tbody
-                    tableBody.innerHTML = ''; // Очищаем таблицу перед добавлением новых данных
+                    const tableBody = document.getElementById('transactionsTable').getElementsByTagName('tbody')[0];
+                    tableBody.innerHTML = '';
 
-                    // Обходим объект transactions, а не массив
                     for (const key in transactions) {
                         if (transactions.hasOwnProperty(key)) {
                             const transaction = transactions[key];
@@ -121,35 +116,28 @@
                             const typeCell = row.insertCell();
                             const amountCell = row.insertCell();
 
-                            idCell.textContent = key; // ID берем из ключа объекта
-                            // Форматируем дату из timestamp
+                            idCell.textContent = key;
                             const date = new Date(transaction.dateAndTime);
                             dateCell.textContent = date.toLocaleString();
                             typeCell.textContent = transaction.transactionType;
                             amountCell.textContent = transaction.amount;
                         }
                     }
-
-
                 } catch (error) {
-                    console.error('Ошибка при парсинге JSON:', error);
-                    document.getElementById('message').textContent = 'Ошибка при обработке данных.'; // Выводим сообщение об ошибке
+                    document.getElementById('message').textContent = 'Ошибка при обработке данных.';
                 }
             } else {
-                console.error('Ошибка при загрузке истории операций:', xhr.status, xhr.statusText);
-                document.getElementById('message').textContent = 'Ошибка при загрузке данных.'; // Выводим сообщение об ошибке
+                document.getElementById('message').textContent = 'Ошибка при загрузке данных.';
             }
         };
 
         xhr.onerror = function() {
-            console.error('Ошибка сети.');
-            document.getElementById('message').textContent = 'Ошибка сети при загрузке данных.'; // Выводим сообщение об ошибке
+            document.getElementById('message').textContent = 'Ошибка сети при загрузке данных.';
         };
 
         xhr.send();
     }
 
-    // 5. Загружаем историю операций при загрузке страницы
     document.addEventListener('DOMContentLoaded', loadTransactions);
 
     function comeBack() {

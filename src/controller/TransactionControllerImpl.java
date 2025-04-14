@@ -1,6 +1,7 @@
 package controller;
 
 import dto.TransactionDTO;
+import exception.TransactionError;
 import model.TransactionType;
 
 import repository.ClientsDB;
@@ -18,20 +19,16 @@ public class TransactionControllerImpl implements TransactionController {
 
 
     @Override
-    public void createTransaction(TransactionDTO transactionData) {
-        if (transactionData.getTransactionType() == TransactionType.TRANSFER && (transactionData.getAccountNumberRecipient() == null || !clientsDB.checkTheExistenceOfTheAccount(transactionData.getAccountNumberRecipient()))) {
-            System.out.println("Ошибка в вводе номера счёта для перевода");
-            return;
+    public void createTransaction(TransactionDTO transactionData) throws TransactionError {
+        if (transactionData.transactionType() == TransactionType.TRANSFER && (transactionData.accountNumberRecipient() == null || !clientsDB.checkTheExistenceOfTheAccount(transactionData.accountNumberRecipient()))) {
+            throw new TransactionError("Не введён номер счёта для перевода");
         }
-        if (transactionData.getAmount().compareTo(BigDecimal.ZERO) == 0) {
-            System.out.println("Ошибка в вводе суммы транзакции");
-            return;
+        if (transactionData.amount().compareTo(BigDecimal.ZERO) == 0) {
+            throw new TransactionError("Сумма транзакции 0");
 
         }
-
-        Transaction transaction = TransactionFactory.createTransaction(transactionData.getTransactionType());
+        Transaction transaction = TransactionFactory.createTransaction(transactionData.transactionType());
         transaction.conductTransaction(transactionData);
-
 
     }
 }

@@ -19,10 +19,10 @@ public class ReplenishmentTransaction implements Transaction {
 
     @Override
     public void conductTransaction(TransactionDTO transactionData) {
-        BigDecimal obsoleteBalance = accountsDB.getBalance(transactionData.getAccountNumber());
-        BigDecimal newBalance = obsoleteBalance.add(transactionData.getAmount());
+        BigDecimal obsoleteBalance = accountsDB.getBalance(transactionData.accountNumber());
+        BigDecimal newBalance = obsoleteBalance.add(transactionData.amount());
 
-        accountsDB.changeBalance(transactionData.getAccountNumber(), newBalance);
+        accountsDB.changeBalance(transactionData.accountNumber(), newBalance);
         transactionsLogDB.addRecord(transactionData);
     }
 }
